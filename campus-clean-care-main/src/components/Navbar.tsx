@@ -3,24 +3,30 @@ import { Button } from "@/components/ui/button";
 import { Shield, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import NotificationBell from "@/components/NotificationBell";
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userRole, setUserRole] = useState<string>("");
 
   useEffect(() => {
     // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsLoggedIn(!!session);
-      setIsAdmin(session?.user?.user_metadata?.role === "Admin");
+      const role = session?.user?.user_metadata?.role;
+      setUserRole(role || "");
+      setIsAdmin(role === "Admin");
     });
 
     // Listen for changes (login/logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session);
-      setIsAdmin(session?.user?.user_metadata?.role === "Admin");
+      const role = session?.user?.user_metadata?.role;
+      setUserRole(role || "");
+      setIsAdmin(role === "Admin");
     });
 
     return () => subscription.unsubscribe();
@@ -56,25 +62,39 @@ const Navbar = () => {
             ) : (
               <>
                 {isAdmin ? (
-                  <Link to="/admin">
-                    <Button variant="ghost" size="sm" className="text-primary font-bold">Admin Panel</Button>
-                  </Link>
+                  <>
+                    <Link to="/admin">
+                      <Button variant="ghost" size="sm" className="text-primary font-bold">Admin Panel</Button>
+                    </Link>
+                    <Link to="/admin/analytics">
+                      <Button variant="ghost" size="sm" className="text-primary font-bold">Analytics</Button>
+                    </Link>
+                  </>
                 ) : (
                   <Link to="/dashboard">
                     <Button variant="ghost" size="sm">Dashboard</Button>
                   </Link>
                 )}
 
-                {!isAdmin && (
-                  <>
-                    <Link to="/raise-complaint">
-                      <Button variant="ghost" size="sm">Raise Complaint</Button>
-                    </Link>
-                    <Link to="/view-complaints">
-                      <Button variant="ghost" size="sm">View Complaints</Button>
-                    </Link>
-                  </>
+                {userRole !== "Admin" && userRole !== "Staff" && (
+                  <Link to="/raise-complaint">
+                    <Button variant="ghost" size="sm">Raise Complaint</Button>
+                  </Link>
                 )}
+
+                {userRole === "Staff" && (
+                  <Link to="/view-complaints">
+                    <Button variant="ghost" size="sm">View Tasks</Button>
+                  </Link>
+                )}
+
+                {(userRole === "Student" || userRole === "Lecturer") && (
+                  <Link to="/view-complaints">
+                    <Button variant="ghost" size="sm">View Complaints</Button>
+                  </Link>
+                )}
+
+                <NotificationBell />
 
                 <Button variant="ghost" size="sm" onClick={handleLogout}>
                   <LogOut className="h-4 w-4 mr-2" />

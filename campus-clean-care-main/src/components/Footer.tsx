@@ -11,7 +11,7 @@ const Footer = () => {
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
                             <Shield className="h-8 w-8 text-primary" />
-                            <span className="font-bold text-xl">Campus Clean Care</span>
+                            <span className="font-bold text-xl">BMS Clean Care</span>
                         </div>
                         <p className="text-muted-foreground leading-relaxed">
                             Empowering our community to build a cleaner, safer, and more sustainable campus environment together.
@@ -36,15 +36,15 @@ const Footer = () => {
                         <ul className="space-y-4">
                             <li className="flex items-start gap-3 text-muted-foreground">
                                 <MapPin className="h-5 w-5 text-primary shrink-0" />
-                                <span>123 University Ave,<br />Innovation District, CA 90210</span>
+                                <span>BMS Institute of Technology,<br />Bangalore, Karnataka</span>
                             </li>
                             <li className="flex items-center gap-3 text-muted-foreground">
                                 <Phone className="h-5 w-5 text-primary shrink-0" />
-                                <span>+1 (555) 123-4567</span>
+                                <span>+91 9663845311</span>
                             </li>
                             <li className="flex items-center gap-3 text-muted-foreground">
                                 <Mail className="h-5 w-5 text-primary shrink-0" />
-                                <span>help@campusclean.edu</span>
+                                <span>help@bmsit.in</span>
                             </li>
                         </ul>
                     </div>

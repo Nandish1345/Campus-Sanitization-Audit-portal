@@ -17,6 +17,7 @@ const Dashboard = () => {
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
+    in_progress: 0,
     resolved: 0,
   });
 
@@ -32,16 +33,22 @@ const Dashboard = () => {
       setUser(session.user);
 
       // Fetch complaints stats
-      // queries can be parallelized
-      const { data: complaints, error } = await supabase
-        .from('complaints')
-        .select('status')
-        .eq('user_id', session.user.id);
+      // Staff see assigned tasks, others see their own complaints
+      let query = supabase.from('complaints').select('status');
+      
+      if (session.user.user_metadata?.role === 'Staff') {
+        query = query.eq('assigned_to', session.user.id);
+      } else {
+        query = query.eq('user_id', session.user.id);
+      }
+
+      const { data: complaints, error } = await query;
 
       if (complaints) {
         setStats({
           total: complaints.length,
           pending: complaints.filter(c => c.status === "Pending").length,
+          in_progress: complaints.filter(c => c.status === "In Progress").length,
           resolved: complaints.filter(c => c.status === "Resolved").length,
         });
       }
@@ -89,6 +96,18 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
+          <Card className="shadow-lg hover:shadow-xl transition-all border-l-4 border-l-blue-500">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                In Progress
+              </CardTitle>
+              <Clock className="h-5 w-5 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{stats.in_progress}</div>
+            </CardContent>
+          </Card>
+
           <Card className="shadow-lg hover:shadow-xl transition-all border-l-4 border-l-success">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -103,16 +122,18 @@ const Dashboard = () => {
         </div>
 
         <div className="flex gap-4 justify-center">
-          <Link to="/raise-complaint">
-            <Button size="lg" className="shadow-lg">
-              <AlertCircle className="mr-2 h-5 w-5" />
-              Raise New Complaint
-            </Button>
-          </Link>
+          {user.user_metadata?.role !== 'Staff' && user.user_metadata?.role !== 'Admin' && (
+            <Link to="/raise-complaint">
+              <Button size="lg" className="shadow-lg">
+                <AlertCircle className="mr-2 h-5 w-5" />
+                Raise New Complaint
+              </Button>
+            </Link>
+          )}
           <Link to="/view-complaints">
             <Button size="lg" variant="outline" className="shadow-lg">
               <FileText className="mr-2 h-5 w-5" />
-              View All Complaints
+              {user.user_metadata?.role === 'Staff' ? 'View My Tasks' : 'View All Complaints'}
             </Button>
           </Link>
         </div>
